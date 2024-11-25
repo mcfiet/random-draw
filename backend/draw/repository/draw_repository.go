@@ -1,8 +1,11 @@
 package repository
 
 import (
+	"errors"
 	"fmt"
 	"log"
+	"math/rand"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/mcfiet/goDo/draw/model"
@@ -34,35 +37,25 @@ func (repo *drawRepository) GetRandomUser() (*userModel.User, error) {
 }
 
 func (repo *drawRepository) GetRandomUserExcluding(giverId uuid.UUID, excludedIds []uuid.UUID) (*userModel.User, error) {
-	// TODO: Implement the GetRandomUserExcluding function
-	var user userModel.User
+	var users []userModel.User
 
 	// Sicherstellen, dass excludedIds nicht leer ist
 	if len(excludedIds) == 0 {
 		excludedIds = append(excludedIds, uuid.Nil)
 	}
 
-	// Raw SQL-Abfrage mit UUID Array und korrekt umgewandeltem excludedIds
-	query := `
-		SELECT * FROM users 
-		WHERE id != ? 
-		AND id != ALL (?::uuid[])  -- Sicherstellen, dass excludedIds als UUID-Array behandelt werden
-		AND id NOT IN (SELECT receiver_id FROM draw_results)
-		ORDER BY RANDOM() LIMIT 1
-	`
-
-	// Übergebe excludedIds als uuid-Array, nicht als Text
-	err := repo.db.Raw(query, giverId, excludedIds).Scan(&user).Error
-	if err != nil {
-		return nil, fmt.Errorf("Fehler beim Abrufen eines zufälligen Benutzers: %w", err)
+	if err := repo.db.Where("id NOT IN ?", excludedIds).Find(&users).Error; err != nil {
+		return nil, err
 	}
 
-	// Überprüfen, ob ein Benutzer gefunden wurde
-	if user.ID == uuid.Nil {
-		return nil, fmt.Errorf("Kein Benutzer gefunden, der den Kriterien entspricht")
+	if len(users) == 0 {
+		return nil, errors.New("no available users")
 	}
 
-	return &user, nil
+	rand.Seed(time.Now().UnixNano())
+	randomIndex := rand.Intn(len(users))
+
+	return &users[randomIndex], nil
 }
 
 func (repo *drawRepository) CheckIfDrawExists(giverId uuid.UUID, recieverId uuid.UUID) bool {
