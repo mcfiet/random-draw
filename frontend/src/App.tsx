@@ -104,6 +104,11 @@ function App() {
     }
   }
 
+  function logoutHandler() {
+    localStorage.clear();
+    window.location.href = "/";
+  }
+
   if (loading) {
     return <h1>Loading...</h1>;
   }
@@ -140,6 +145,9 @@ function App() {
           <div style={{ color: "lightpink" }}>{error}</div>
         </>
       )}
+      <div>
+        <button onClick={logoutHandler}>Logout</button>
+      </div>
     </div>
   );
 }
