@@ -5,7 +5,7 @@ import (
 	"net/http"
 
 	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/cors"
+	"github.com/joho/godotenv"
 
 	"github.com/mcfiet/goDo/app"
 	authRouter "github.com/mcfiet/goDo/auth/routing"
@@ -14,24 +14,20 @@ import (
 )
 
 func main() {
-	r := chi.NewRouter()
+	_ = godotenv.Load("../.env")
 
-	r.Use(cors.Handler(cors.Options{
-		AllowedOrigins:   []string{"http://localhost:5173"}, // URL des React-Frontends
-		AllowedMethods:   []string{"GET", "POST", "OPTIONS"},
-		AllowedHeaders:   []string{"Content-Type", "Authorization"}, // Erlaube Anfrage-Header
-		ExposedHeaders:   []string{"Authorization"},                 // Erlaube Antwort-Header
-		AllowCredentials: true,
-	}))
+	r := chi.NewRouter()
+	api := chi.NewRouter()
 
 	app := app.InitApp()
 	todoRouter := todoRouter.DrawRouter(app.DrawController)
 	authRouter := authRouter.AuthRouter(app.AuthHandler, app.UserController)
 	userRouter := userRouter.UserRouter(app.UserController)
 
-	r.Mount("/", authRouter)
-	r.Mount("/draw", todoRouter)
-	r.Mount("/users", userRouter)
+	api.Mount("/", authRouter)
+	api.Mount("/draw", todoRouter)
+	api.Mount("/users", userRouter)
+	r.Mount("/api", api)
 	log.Println("Server starting on :3000")
 
 	http.ListenAndServe(":3000", r)

@@ -7,8 +7,13 @@ interface UserData {
   password: string;
 }
 
+interface TokenData {
+  exp: number;
+  username: string;
+}
+
 function App() {
-  const url = "http://localhost:3000";
+  const url = "/api";
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [token, setToken] = useState<string | null>(
@@ -33,7 +38,7 @@ function App() {
       console.log("Draw: ", resDraw);
       setDraw(resDraw);
       setError(null);
-    } catch (error) {
+    } catch (error: any) {
       setError(error.message);
     } finally {
       setLoading(false);
@@ -63,7 +68,7 @@ function App() {
       const jwtToken = response.headers.get("Authorization")?.split(" ")[1];
       setToken(jwtToken ?? "");
       setError(null);
-    } catch (error) {
+    } catch (error: any) {
       setError(error.message);
     } finally {
       setLoading(false);
@@ -97,7 +102,7 @@ function App() {
       console.log("drawn user: ", reciever);
       setDraw(reciever);
       setError(null);
-    } catch (error) {
+    } catch (error: any) {
       setError(error.message);
     } finally {
       setLoading(false);
@@ -131,9 +136,10 @@ function App() {
     );
   }
 
+  const extoken = jwtDecode(token) as TokenData;
   return (
     <div>
-      <h1>Hallo {jwtDecode(token).username}</h1>
+      <h1>Hallo {extoken.username}</h1>
       {draw && (
         <div style={{ margin: "1rem" }}>{`Du hast ${draw} gezogen`}</div>
       )}
