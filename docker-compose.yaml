@@ -13,6 +13,7 @@ services:
       - POSTGRES_DB
     depends_on:
       - db
+    entrypoint: ["./entrypoint.sh"]
 
   frontend:
     image: ghcr.io/mcfiet/random-draw/frontend
