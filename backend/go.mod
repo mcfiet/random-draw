@@ -1,4 +1,4 @@
-module github.com/mcfiet/goDo
+module github.com/mcfiet/random-draw
 
 go 1.23.1
 
