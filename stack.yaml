@@ -1,8 +1,10 @@
 services:
   backend:
     image: ghcr.io/mcfiet/random-draw/backend
+    networks:
+      - frontend
     environment:
-      POSTGRES_HOST: db
+      POSTGRES_HOST: random-draw_db
       POSTGRES_PORT: 5432
       POSTGRES_PASSWORD_FILE: /run/secrets/POSTGRES_PASSWORD
       POSTGRES_USER_FILE: /run/secrets/POSTGRES_USER
@@ -18,13 +20,15 @@ services:
 
   frontend:
     image: ghcr.io/mcfiet/random-draw/frontend
+    networks:
+      - frontend
     depends_on:
       - backend
-    ports:
-      - "8080:80"
 
   db:
     image: postgres:latest
+    networks:
+      - frontend
     restart: unless-stopped
     volumes:
       - postgres-data:/var/lib/postgresql/data
@@ -54,3 +58,7 @@ secrets:
 
 volumes:
   postgres-data:
+
+networks:
+  frontend:
+    external: true
